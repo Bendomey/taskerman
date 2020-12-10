@@ -16,8 +16,6 @@ import (
 
 const defaultPort = "8080"
 
-// os.Getenv("DATABASE_URL")
-
 func main() {
 	// load environmwnt variables in here
 	err := godotenv.Load()
