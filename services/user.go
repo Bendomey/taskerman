@@ -2,7 +2,6 @@ package services
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/Bendomey/goutilities/pkg/hashpassword"
@@ -18,17 +17,17 @@ type UserService interface {
 	// DeleteUser(ctx context.Context, id string) (bool, error)
 }
 
-// User model
+//User model
 type User struct {
-	ID        int64     `json:"id"`
-	Fullname  string    `json:"fullname"`
-	Email     string    `json:"email"`
-	Password  string    `json:"password"`
-	Type      string    `json:"user_type"`
-	IsDeleted bool      `json:"deleted"`
-	CreatedBy int64     `json:"createdBy"`
-	CreatedAt time.Time `json:"createdAt"`
-	UpdatedAt time.Time `json:"updatedAt"`
+	ID        int         `json:"id"`
+	Fullname  string      `json:"fullname"`
+	Email     string      `json:"email"`
+	Password  string      `json:"password"`
+	Type      string      `json:"user_type"`
+	IsDeleted bool        `json:"deleted"`
+	CreatedBy interface{} `json:"createdBy"`
+	CreatedAt time.Time   `json:"createdAt"`
+	UpdatedAt time.Time   `json:"updatedAt"`
 }
 
 //userRepository gets repository
@@ -47,12 +46,26 @@ func (s *userRepository) CreateUser(ctx context.Context, name string, email stri
 	if hashErr != nil {
 		return nil, hashErr
 	}
-	u, err := s.repository.Insert(ctx, "insert into users(fullname,email,password) values($1,$2,$3)", name, email, hash)
+	var idRes int
+	var createdByRes interface{}
+	var nameRes, emailRes, userTypeRes string
+	var createdAtRes, updatedAtRes time.Time
+	err := s.repository.Insert(context.Background(), "insert into users (fullname,email,password) values($1,$2,$3) returning id,fullname,email,user_type,created_by,created_at,updated_at;", name, email, hash).Scan(
+		&idRes, &nameRes, &emailRes, &userTypeRes, &createdByRes, &createdAtRes, &updatedAtRes,
+	)
+
 	if err != nil {
 		return nil, err
 	}
 
-	log.Println(u)
-	var user = &User{}
+	var user = &User{
+		ID:        idRes,
+		Fullname:  nameRes,
+		Email:     emailRes,
+		Type:      userTypeRes,
+		CreatedBy: createdByRes,
+		CreatedAt: createdAtRes,
+		UpdatedAt: updatedAtRes,
+	}
 	return user, nil
 }

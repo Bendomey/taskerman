@@ -3,14 +3,14 @@ package repository
 import (
 	"context"
 
-	"github.com/jackc/pgtype"
+	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
 )
 
 //Repository services to export from repository module
 type Repository interface {
-	Close()                                                                                   /// to close database
-	Insert(ctx context.Context, statement string, args ...interface{}) (pgtype.Record, error) /// to close database
+	Close()                                                                    /// to close database
+	Insert(ctx context.Context, statement string, args ...interface{}) pgx.Row /// to close database
 }
 
 //type to hold postgres db
@@ -37,8 +37,8 @@ func (r *postgresqlRepository) Close() {
 }
 
 // Close is used to insert into the db
-func (r *postgresqlRepository) Insert(ctx context.Context, statement string, args ...interface{}) (pgtype.Record, error) {
-	var row pgtype.Record
-	err := r.db.QueryRow(ctx, statement, args).Scan(&row)
-	return row, err
+func (r *postgresqlRepository) Insert(ctx context.Context, statement string, args ...interface{}) pgx.Row {
+	// var row pgx.Row
+	row := r.db.QueryRow(ctx, statement, args...)
+	return row
 }

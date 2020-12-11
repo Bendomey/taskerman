@@ -15,7 +15,7 @@ type CreateUserInput struct {
 }
 
 type User struct {
-	ID        string       `json:"id"`
+	ID        int          `json:"id"`
 	Fullname  string       `json:"fullname"`
 	Email     string       `json:"email"`
 	UserType  UserTypeEnum `json:"user_type"`

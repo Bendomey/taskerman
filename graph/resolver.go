@@ -11,7 +11,7 @@ import (
 
 //Resolver get the services
 type Resolver struct {
-	userService *services.UserService
+	userService services.UserService
 }
 
 // NewGraphqlServer creates a graphql server of all microservices
@@ -19,6 +19,6 @@ func NewGraphqlServer(repo repository.Repository) (*Resolver, error) {
 	// connect to user service
 	userService := services.NewUserService(repo)
 	return &Resolver{
-		userService: &userService,
+		userService: userService,
 	}, nil
 }

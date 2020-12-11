@@ -7,10 +7,8 @@ import (
 
 	"github.com/joho/godotenv"
 
-	"github.com/99designs/gqlgen/graphql/handler"
-	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/99designs/gqlgen/handler"
 	"github.com/Bendomey/task-assignment/graph"
-	"github.com/Bendomey/task-assignment/graph/generated"
 	"github.com/Bendomey/task-assignment/repository"
 )
 
@@ -44,12 +42,13 @@ func main() {
 		port = defaultPort
 	}
 
-	a, _ := graph.NewGraphqlServer(repository)
-	//start graphql server here
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: a}))
-	http.Handle("/", playground.Handler("GraphQL playground", "/query"))
-	http.Handle("/query", srv)
+	srv, err := graph.NewGraphqlServer(repository)
+	if err != nil {
+		log.Fatalf("An error occured %s", err)
+	}
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
+	log.Printf("connect to http://localhost:%s/graphql for GraphQL playground", port)
+	http.Handle("/", handler.GraphQL(srv.ToExecutableSchema()))
+	http.Handle("/graphql", handler.Playground("Taskerman", "/"))
 	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
