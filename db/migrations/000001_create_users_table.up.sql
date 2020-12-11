@@ -1,4 +1,4 @@
--- CREATE TYPE user_type_enum AS ENUM ('ADMIN','USER','REVIEWER');
+CREATE TYPE user_type_enum AS ENUM ('ADMIN','USER','REVIEWER');
 
 CREATE TABLE IF NOT EXISTS users(
    id serial PRIMARY KEY,

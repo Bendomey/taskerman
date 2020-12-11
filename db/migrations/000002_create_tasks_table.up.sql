@@ -1,4 +1,4 @@
--- CREATE TYPE task_status_enum AS ENUM ('PENDING', 'DONE', 'FAILED');
+CREATE TYPE task_status_enum AS ENUM ('PENDING', 'DONE', 'FAILED');
 
 CREATE TABLE IF NOT EXISTS tasks(
     id serial PRIMARY KEY,
