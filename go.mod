@@ -2,7 +2,6 @@ module github.com/Bendomey/task-assignment
 
 go 1.15
 
-
 require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/Bendomey/goutilities v0.0.0-20201104205146-d5b8f238bf1b
