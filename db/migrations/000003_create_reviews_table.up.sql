@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS reviews(
     reviewer serial NOT NULL REFERENCES users (id),
     status review_status_enum DEFAULT 'PENDING',
     reason TEXT,
+    deleted boolean DEFAULT FALSE,
     created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
     updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp
 );

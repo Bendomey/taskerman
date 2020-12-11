@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users(
    password VARCHAR (225) NOT NULL,
    email VARCHAR (300) UNIQUE NOT NULL,
    user_type user_type_enum DEFAULT 'USER',
+   deleted boolean DEFAULT FALSE,
    created_by serial REFERENCES users (id),
    created_at TIMESTAMP NOT NULL DEFAULT current_timestamp,
    updated_at TIMESTAMP NOT NULL DEFAULT current_timestamp
