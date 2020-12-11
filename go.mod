@@ -2,7 +2,6 @@ module github.com/Bendomey/task-assignment
 
 go 1.15
 
-+heroku goVersion go1.15
 
 require (
 	github.com/99designs/gqlgen v0.13.0
