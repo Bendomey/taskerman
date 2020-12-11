@@ -1,6 +1,8 @@
+# for running application
 run:
-	reflex -r '\.go' -s -- sh -c "go run server.go"
+	reflex -r '\.go' -s -- sh -c "go run cmd/server.go"
 
+# for db migration
 migrate:
 	migrate -database postgres://domey:akankobateng1@localhost:5432/taskerman?sslmode=disable -path db/migrations up
 
@@ -9,3 +11,7 @@ migrate-fix:
 
 migrate-rollover:
 	migrate -database postgres://domey:akankobateng1@localhost:5432/taskerman?sslmode=disable -path db/migrations down
+
+# for generating grapqhl
+generate-graph:
+	go run github.com/99designs/gqlgen generate
