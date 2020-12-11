@@ -2,19 +2,67 @@
 
 package model
 
-type NewTodo struct {
-	Text   string `json:"text"`
-	UserID string `json:"userId"`
-}
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
 
-type Todo struct {
-	ID   string `json:"id"`
-	Text string `json:"text"`
-	Done bool   `json:"done"`
-	User *User  `json:"user"`
+type CreateUserInput struct {
+	Name     string `json:"name"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type User struct {
-	ID   string `json:"id"`
-	Name string `json:"name"`
+	ID        string       `json:"id"`
+	Fullname  string       `json:"fullname"`
+	Email     string       `json:"email"`
+	UserType  UserTypeEnum `json:"user_type"`
+	CreatedBy *User        `json:"createdBy"`
+	CreatedAt string       `json:"createdAt"`
+	UpdatedAt string       `json:"updatedAt"`
+}
+
+type UserTypeEnum string
+
+const (
+	UserTypeEnumAdmin    UserTypeEnum = "ADMIN"
+	UserTypeEnumUser     UserTypeEnum = "USER"
+	UserTypeEnumReviewer UserTypeEnum = "REVIEWER"
+)
+
+var AllUserTypeEnum = []UserTypeEnum{
+	UserTypeEnumAdmin,
+	UserTypeEnumUser,
+	UserTypeEnumReviewer,
+}
+
+func (e UserTypeEnum) IsValid() bool {
+	switch e {
+	case UserTypeEnumAdmin, UserTypeEnumUser, UserTypeEnumReviewer:
+		return true
+	}
+	return false
+}
+
+func (e UserTypeEnum) String() string {
+	return string(e)
+}
+
+func (e *UserTypeEnum) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UserTypeEnum(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UserTypeEnum", str)
+	}
+	return nil
+}
+
+func (e UserTypeEnum) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }
