@@ -1,5 +1,5 @@
 run:
-	reflex -r '\.go' -s -- sh -c "go run server.go"
+	reflex -r '\.go' -s -- sh -c "go run cmd/server.go"
 
 migrate:
 	migrate -database postgres://domey:akankobateng1@localhost:5432/taskerman?sslmode=disable -path db/migrations up
