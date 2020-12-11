@@ -1,4 +1,4 @@
-CREATE TYPE review_status_enum AS ENUM ('PENDING','ACCEPT','REJECT');
+-- CREATE TYPE review_status_enum AS ENUM ('PENDING','ACCEPT','REJECT');
 
 CREATE TABLE IF NOT EXISTS reviews(
     id serial PRIMARY KEY,
