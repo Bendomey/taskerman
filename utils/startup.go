@@ -5,6 +5,8 @@ import (
 	"log"
 	"os"
 
+	"github.com/Bendomey/goutilities/pkg/hashpassword"
+
 	"github.com/Bendomey/task-assignment/repository"
 )
 
@@ -25,8 +27,13 @@ func SaveAdminInfo(repo repository.Repository) error {
 
 	if length == 0 {
 		log.Println("No users in db, creating one")
+		//hash password
+		hash, hashErr := hashpassword.HashPassword(os.Getenv("ADMIN_PASSWORD"))
+		if hashErr != nil {
+			return hashErr
+		}
 		//create admin
-		_, err := repo.Insert(context.Background(), "insert into users (fullname,password,email,user_type) values($1,$2,$3,$4)", os.Getenv("ADMIN_NAME"), os.Getenv("ADMIN_PASSWORD"), os.Getenv("ADMIN_EMAIL"), os.Getenv("ADMIN_TYPE"))
+		_, err := repo.Insert(context.Background(), "insert into users (fullname,password,email,user_type) values($1,$2,$3,$4)", os.Getenv("ADMIN_NAME"), hash, os.Getenv("ADMIN_EMAIL"), os.Getenv("ADMIN_TYPE"))
 		if err != nil {
 			return err
 		}

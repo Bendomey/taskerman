@@ -14,6 +14,16 @@ type CreateUserInput struct {
 	Password string `json:"password"`
 }
 
+type LoginResult struct {
+	User  *User  `json:"user"`
+	Token string `json:"token"`
+}
+
+type LoginUserInput struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 type User struct {
 	ID        int          `json:"id"`
 	Fullname  string       `json:"fullname"`

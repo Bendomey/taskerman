@@ -19,15 +19,36 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 		return nil, err
 	}
 	u := &model.User{
-		ID:       res.ID,
-		Fullname: res.Fullname,
-		Email:    res.Email,
-		// CreatedBy: res.CreatedBy,
+		ID:        res.ID,
+		Fullname:  res.Fullname,
+		Email:     res.Email,
+		CreatedBy: nil,
 		UserType:  model.UserTypeEnum(res.Type),
 		CreatedAt: res.CreatedAt.String(),
 		UpdatedAt: res.UpdatedAt.String(),
 	}
 	return u, nil
+	// panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) Login(ctx context.Context, input model.LoginUserInput) (*model.LoginResult, error) {
+	res, err := r.userService.LoginUser(ctx, input.Email, input.Password)
+	if err != nil {
+		return nil, err
+	}
+	return &model.LoginResult{
+		User: &model.User{
+			ID:        res.User.ID,
+			Fullname:  res.User.Fullname,
+			Email:     res.User.Email,
+			CreatedBy: nil,
+			UserType:  model.UserTypeEnum(res.User.Type),
+			CreatedAt: res.User.CreatedAt.String(),
+			UpdatedAt: res.User.UpdatedAt.String(),
+		},
+		Token: res.Token,
+	}, nil
+
 	// panic(fmt.Errorf("not implemented"))
 }
 
