@@ -10,6 +10,7 @@ import (
 	"github.com/99designs/gqlgen/handler"
 	"github.com/Bendomey/task-assignment/graph"
 	"github.com/Bendomey/task-assignment/repository"
+	"github.com/Bendomey/task-assignment/utils"
 )
 
 const defaultPort = "8080"
@@ -21,20 +22,19 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	//get repository in here
-	databaseurl = os.Getenv("DATABASE_URL_LIVE")
-	if databaseurl == "" {
-		log.Fatalln("Please add a database url to your environment variables under the key: DATABASE_URL")
-		os.Exit(1)
-	}
-
-	repository, err := repository.NewPostgresqlRepository(databaseurl)
+	repository, err := repository.NewPostgresqlRepository(os.Getenv("DATABASE_URL_LIVE"))
 	if err != nil {
 		log.Fatalln(err)
 	}
 
 	//incase of any errors close connection
 	defer repository.Close()
+
+	//create super admin if it doesn't exists
+	saveAdminErr := utils.SaveAdminInfo(repository)
+	if saveAdminErr != nil {
+		log.Fatalf("Was unable to save admin. Logs here: %s", saveAdminErr)
+	}
 
 	//set port
 	port := os.Getenv("PORT")
@@ -47,7 +47,7 @@ func main() {
 		log.Fatalf("An error occured %s", err)
 	}
 
-	log.Printf("connect to http://localhost:%s/graphql for GraphQL playground", port)
+	log.Printf("Server active. Goto http://localhost:%s/graphql for GraphQL playground", port)
 	http.Handle("/", handler.GraphQL(srv.ToExecutableSchema()))
 	http.Handle("/graphql", handler.Playground("Taskerman", "/"))
 	log.Fatal(http.ListenAndServe(":"+port, nil))

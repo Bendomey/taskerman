@@ -2,6 +2,7 @@ package repository
 
 import (
 	"context"
+	"log"
 
 	"github.com/jackc/pgx/v4"
 	"github.com/jackc/pgx/v4/pgxpool"
@@ -9,8 +10,11 @@ import (
 
 //Repository services to export from repository module
 type Repository interface {
-	Close()                                                                    /// to close database
-	Insert(ctx context.Context, statement string, args ...interface{}) pgx.Row /// to close database
+	Close()                                                                              /// to close database
+	Insert(ctx context.Context, statement string, args ...interface{}) (bool, error)     /// to insert and return boolean database
+	GetSingle(ctx context.Context, statement string, args ...interface{}) pgx.Row        /// return single row database
+	GetAll(ctx context.Context, statement string, args ...interface{}) (pgx.Rows, error) /// return single row database
+
 }
 
 //type to hold postgres db
@@ -26,6 +30,7 @@ func NewPostgresqlRepository(url string) (Repository, error) {
 	if err != nil {
 		return nil, err
 	}
+	log.Println("Taskerman connected to db successfully")
 
 	return &postgresqlRepository{pool}, nil
 }
@@ -36,9 +41,23 @@ func (r *postgresqlRepository) Close() {
 	r.db.Close()
 }
 
-// Close is used to insert into the db
-func (r *postgresqlRepository) Insert(ctx context.Context, statement string, args ...interface{}) pgx.Row {
+// InsertAndReturn is used to insert into the db
+func (r *postgresqlRepository) GetSingle(ctx context.Context, statement string, args ...interface{}) pgx.Row {
 	// var row pgx.Row
 	row := r.db.QueryRow(ctx, statement, args...)
 	return row
+}
+
+// Close is used to insert into the db
+func (r *postgresqlRepository) Insert(ctx context.Context, statement string, args ...interface{}) (bool, error) {
+	_, err := r.db.Exec(ctx, statement, args...)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *postgresqlRepository) GetAll(ctx context.Context, statement string, args ...interface{}) (pgx.Rows, error) {
+	rows, err := r.db.Query(ctx, statement, args...)
+	return rows, err
 }
