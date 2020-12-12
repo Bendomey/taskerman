@@ -10,6 +10,7 @@ import (
 	"github.com/99designs/gqlgen/handler"
 	"github.com/Bendomey/task-assignment/graph"
 	"github.com/Bendomey/task-assignment/repository"
+	"github.com/Bendomey/task-assignment/utils"
 )
 
 const defaultPort = "8080"
@@ -29,6 +30,12 @@ func main() {
 	//incase of any errors close connection
 	defer repository.Close()
 
+	//create super admin if it doesn't exists
+	saveAdminErr := utils.SaveAdminInfo(repository)
+	if saveAdminErr != nil {
+		log.Fatalf("Was unable to save admin. Logs here: %s", saveAdminErr)
+	}
+
 	//set port
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -40,7 +47,7 @@ func main() {
 		log.Fatalf("An error occured %s", err)
 	}
 
-	log.Printf("connect to http://localhost:%s/graphql for GraphQL playground", port)
+	log.Printf("Server active. Goto http://localhost:%s/graphql for GraphQL playground", port)
 	http.Handle("/", handler.GraphQL(srv.ToExecutableSchema()))
 	http.Handle("/graphql", handler.Playground("Taskerman", "/"))
 	log.Fatal(http.ListenAndServe(":"+port, nil))
