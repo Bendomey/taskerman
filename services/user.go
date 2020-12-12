@@ -50,7 +50,7 @@ func (s *userRepository) CreateUser(ctx context.Context, name string, email stri
 	var createdByRes interface{}
 	var nameRes, emailRes, userTypeRes string
 	var createdAtRes, updatedAtRes time.Time
-	err := s.repository.Insert(context.Background(), "insert into users (fullname,email,password) values($1,$2,$3) returning id,fullname,email,user_type,created_by,created_at,updated_at;", name, email, hash).Scan(
+	err := s.repository.GetSingle(ctx, "insert into users (fullname,email,password) values($1,$2,$3) returning id,fullname,email,user_type,created_by,created_at,updated_at;", name, email, hash).Scan(
 		&idRes, &nameRes, &emailRes, &userTypeRes, &createdByRes, &createdAtRes, &updatedAtRes,
 	)
 
