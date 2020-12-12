@@ -20,8 +20,20 @@ enum UserTypeEnum {
   REVIEWER
 }
 
+# for creating a normal user
 input CreateUserInput {
   name: String!
+  email: String!
+  password: String!
+}
+
+# for login mutation
+type LoginResult {
+  user: User!
+  token: String!
+}
+
+input LoginUserInput {
   email: String!
   password: String!
 }
@@ -32,4 +44,5 @@ type Query {
 
 type Mutation {
   createUser(input: CreateUserInput!): User!
+  login(input: LoginUserInput!): LoginResult!
 }
