@@ -21,14 +21,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	//get repository in here
-	databaseurl = os.Getenv("DATABASE_URL_LIVE")
-	if databaseurl == "" {
-		log.Fatalln("Please add a database url to your environment variables under the key: DATABASE_URL")
-		os.Exit(1)
-	}
-
-	repository, err := repository.NewPostgresqlRepository(databaseurl)
+	repository, err := repository.NewPostgresqlRepository(os.Getenv("DATABASE_URL_LIVE"))
 	if err != nil {
 		log.Fatalln(err)
 	}
