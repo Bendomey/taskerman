@@ -9,7 +9,7 @@ type User {
   fullname: String!
   email: String!
   user_type: UserTypeEnum!
-  createdBy: User!
+  createdBy: User
   createdAt: Date!
   updatedAt: Date!
 }
@@ -38,6 +38,14 @@ input LoginUserInput {
   password: String!
 }
 
+# for creation of upper management
+# input CreateAdminInput {
+#   name: String!
+#   email: String!
+#   password: String!
+#   user_type: UserTypeEnum!
+# }
+
 type Query {
   users: [User]!
 }
@@ -45,4 +53,5 @@ type Query {
 type Mutation {
   createUser(input: CreateUserInput!): User!
   login(input: LoginUserInput!): LoginResult!
+  # createUserAdmin(input: CreateAdminInput!): User!
 }

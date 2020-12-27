@@ -22,7 +22,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	repository, err := repository.NewPostgresqlRepository(os.Getenv("DATABASE_URL_LIVE"))
+	repository, err := repository.NewPostgresqlRepository(os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalln(err)
 	}

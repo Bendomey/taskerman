@@ -260,7 +260,7 @@ type User {
   fullname: String!
   email: String!
   user_type: UserTypeEnum!
-  createdBy: User!
+  createdBy: User
   createdAt: Date!
   updatedAt: Date!
 }
@@ -289,6 +289,14 @@ input LoginUserInput {
   password: String!
 }
 
+# for creation of upper management
+# input CreateAdminInput {
+#   name: String!
+#   email: String!
+#   password: String!
+#   user_type: UserTypeEnum!
+# }
+
 type Query {
   users: [User]!
 }
@@ -296,6 +304,7 @@ type Query {
 type Mutation {
   createUser(input: CreateUserInput!): User!
   login(input: LoginUserInput!): LoginResult!
+  # createUserAdmin(input: CreateAdminInput!): User!
 }
 `, BuiltIn: false},
 }
@@ -813,14 +822,11 @@ func (ec *executionContext) _User_createdBy(ctx context.Context, field graphql.C
 		return graphql.Null
 	}
 	if resTmp == nil {
-		if !graphql.HasFieldError(ctx, fc) {
-			ec.Errorf(ctx, "must not be null")
-		}
 		return graphql.Null
 	}
 	res := resTmp.(*model.User)
 	fc.Result = res
-	return ec.marshalNUser2ᚖgithubᚗcomᚋBendomeyᚋtaskᚑassignmentᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
+	return ec.marshalOUser2ᚖgithubᚗcomᚋBendomeyᚋtaskᚑassignmentᚋgraphᚋmodelᚐUser(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _User_createdAt(ctx context.Context, field graphql.CollectedField, obj *model.User) (ret graphql.Marshaler) {
@@ -2197,9 +2203,6 @@ func (ec *executionContext) _User(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "createdBy":
 			out.Values[i] = ec._User_createdBy(ctx, field, obj)
-			if out.Values[i] == graphql.Null {
-				invalids++
-			}
 		case "createdAt":
 			out.Values[i] = ec._User_createdAt(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
