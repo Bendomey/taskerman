@@ -6,7 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.13.0
 	github.com/Bendomey/goutilities v0.0.0-20201104205146-d5b8f238bf1b
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/gin-gonic/gin v1.6.3 // indirect
+	github.com/gin-gonic/gin v1.6.3
 	github.com/golang-migrate/migrate v3.5.4+incompatible // indirect
 	github.com/jackc/pgconn v1.8.0
 	github.com/jackc/pgtype v1.6.2
