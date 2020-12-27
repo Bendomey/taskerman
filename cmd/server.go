@@ -69,6 +69,7 @@ func main() {
 
 	//setting up gin
 	r := gin.Default()
+	r.Use(utils.GinContextToContextMiddleware())
 	r.POST("/", graphqlHandler(srv))
 	r.GET("/graphql", playgroundHandler())
 	r.Run()
