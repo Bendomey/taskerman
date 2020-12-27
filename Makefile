@@ -15,3 +15,7 @@ migrate-rollover:
 # for generating grapqhl
 generate-graph:
 	go run github.com/99designs/gqlgen generate
+
+# for containerizing to docker
+build-docker:
+	docker build -t 0545526664/taskerman .
