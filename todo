@@ -1,0 +1,1 @@
+1. Handle errors. Make sure to spoof the sql errors to generate your own custom errors. That will help less access to db for small transactions like checking if user exists before creating a new one.
