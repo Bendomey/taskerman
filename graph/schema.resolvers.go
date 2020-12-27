@@ -7,12 +7,20 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Bendomey/task-assignment/utils"
+
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Bendomey/task-assignment/graph/generated"
 	"github.com/Bendomey/task-assignment/graph/model"
 )
 
 func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUserInput) (*model.User, error) {
+	//if there is a validation errorm return the error,else go on with whatever you are doing
+	_, validateErr := utils.ValidateUser(ctx, r.userService)
+	if validateErr != nil {
+		return nil, validateErr
+	}
+
 	// var user model.User
 	res, err := r.userService.CreateUser(ctx, input.Name, input.Email, input.Password)
 	if err != nil {
@@ -28,7 +36,6 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 		UpdatedAt: res.UpdatedAt.String(),
 	}
 	return u, nil
-	// panic(fmt.Errorf("not implemented"))
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginUserInput) (*model.LoginResult, error) {
@@ -48,8 +55,6 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginUserInput
 		},
 		Token: res.Token,
 	}, nil
-
-	// panic(fmt.Errorf("not implemented"))
 }
 
 func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
@@ -65,6 +70,7 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
+//ToExecutableSchema hmm
 // !!! WARNING !!!
 // The code below was going to be deleted when updating resolvers. It has been copied here so you have
 // one last chance to move it out of harms way if you want. There are two reasons this happens:

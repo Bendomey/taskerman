@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"net/http"
 	"os"
 
 	"github.com/joho/godotenv"
@@ -11,9 +10,30 @@ import (
 	"github.com/Bendomey/task-assignment/graph"
 	"github.com/Bendomey/task-assignment/repository"
 	"github.com/Bendomey/task-assignment/utils"
+	"github.com/gin-gonic/gin"
 )
 
 const defaultPort = "8080"
+
+//defining the graphql handler
+func graphqlHandler(srv *graph.Resolver) gin.HandlerFunc {
+	// NewExecutableSchema and Config are in the generated.go file
+	// Resolver is in the resolver.go file
+	h := handler.GraphQL(srv.ToExecutableSchema())
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
+
+// Defining the playground handler
+func playgroundHandler() gin.HandlerFunc {
+	h := handler.Playground("Taskerman", "/")
+
+	return func(c *gin.Context) {
+		h.ServeHTTP(c.Writer, c.Request)
+	}
+}
 
 func main() {
 	// load environmwnt variables in here
@@ -22,7 +42,7 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	repository, err := repository.NewPostgresqlRepository(os.Getenv("DATABASE_URL_LIVE"))
+	repository, err := repository.NewPostgresqlRepository(os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatalln(err)
 	}
@@ -47,8 +67,10 @@ func main() {
 		log.Fatalf("An error occured %s", err)
 	}
 
-	log.Printf("Server active. Goto http://localhost:%s/graphql for GraphQL playground", port)
-	http.Handle("/", handler.GraphQL(srv.ToExecutableSchema()))
-	http.Handle("/graphql", handler.Playground("Taskerman", "/"))
-	log.Fatal(http.ListenAndServe(":"+port, nil))
+	//setting up gin
+	r := gin.Default()
+	r.Use(utils.GinContextToContextMiddleware())
+	r.POST("/", graphqlHandler(srv))
+	r.GET("/graphql", playgroundHandler())
+	r.Run()
 }

@@ -6,7 +6,7 @@ run:
 migrate:
 	migrate -database postgres://domey:akankobateng1@localhost:5432/taskerman?sslmode=disable -path db/migrations up
 
-migrate-fix:
+migrate-fix:g
 	migrate -path db/migrations -database postgres://domey:akankobateng1@localhost:5432/taskerman?sslmode=disable force $(version)
 
 migrate-rollover:
