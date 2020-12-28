@@ -33,7 +33,7 @@ func SaveAdminInfo(repo repository.Repository) error {
 			return hashErr
 		}
 		//create admin
-		_, err := repo.Insert(context.Background(), "insert into users (fullname,password,email,user_type) values($1,$2,$3,$4)", os.Getenv("ADMIN_NAME"), hash, os.Getenv("ADMIN_EMAIL"), os.Getenv("ADMIN_TYPE"))
+		_, err := repo.Insert(context.Background(), "insert into users (fullname,password,email,user_type,created_by) values($1,$2,$3,$4,$5)", os.Getenv("ADMIN_NAME"), hash, os.Getenv("ADMIN_EMAIL"), os.Getenv("ADMIN_TYPE"), 1)
 		if err != nil {
 			return err
 		}

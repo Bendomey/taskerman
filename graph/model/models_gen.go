@@ -6,12 +6,14 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"time"
 )
 
 type CreateUserInput struct {
-	Name     string `json:"name"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Name     string       `json:"name"`
+	Email    string       `json:"email"`
+	Password string       `json:"password"`
+	Type     UserTypeEnum `json:"type"`
 }
 
 type LoginResult struct {
@@ -30,8 +32,8 @@ type User struct {
 	Email     string       `json:"email"`
 	UserType  UserTypeEnum `json:"user_type"`
 	CreatedBy *User        `json:"createdBy"`
-	CreatedAt string       `json:"createdAt"`
-	UpdatedAt string       `json:"updatedAt"`
+	CreatedAt time.Time    `json:"createdAt"`
+	UpdatedAt time.Time    `json:"updatedAt"`
 }
 
 type UserTypeEnum string

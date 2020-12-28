@@ -2,16 +2,16 @@
 #
 # https://gqlgen.com/getting-started/
 
-scalar Date
+scalar Time
 
 type User {
   id: Int!
   fullname: String!
   email: String!
   user_type: UserTypeEnum!
-  createdBy: User
-  createdAt: Date!
-  updatedAt: Date!
+  createdBy: User!
+  createdAt: Time!
+  updatedAt: Time!
 }
 
 enum UserTypeEnum {
@@ -25,6 +25,7 @@ input CreateUserInput {
   name: String!
   email: String!
   password: String!
+  type: UserTypeEnum!
 }
 
 # for login mutation
@@ -38,14 +39,6 @@ input LoginUserInput {
   password: String!
 }
 
-# for creation of upper management
-# input CreateAdminInput {
-#   name: String!
-#   email: String!
-#   password: String!
-#   user_type: UserTypeEnum!
-# }
-
 type Query {
   users: [User]!
 }
@@ -53,5 +46,4 @@ type Query {
 type Mutation {
   createUser(input: CreateUserInput!): User!
   login(input: LoginUserInput!): LoginResult!
-  # createUserAdmin(input: CreateAdminInput!): User!
 }
