@@ -3,12 +3,13 @@ package services
 import (
 	"context"
 	"errors"
-	"log"
+	"fmt"
 	"os"
 
 	"github.com/Bendomey/goutilities/pkg/hashpassword"
 	"github.com/Bendomey/goutilities/pkg/signjwt"
 	"github.com/Bendomey/goutilities/pkg/validatehash"
+	"github.com/Bendomey/task-assignment/graph/model"
 	"github.com/Bendomey/task-assignment/models"
 	"github.com/Bendomey/task-assignment/repository"
 	"github.com/dgrijalva/jwt-go"
@@ -16,18 +17,18 @@ import (
 
 // UserService inteface holds the user-databse transactions of this controller
 type UserService interface {
-	CreateUser(ctx context.Context, name string, email string, password string, userType string, createdBy int) (*models.User, error)
+	CreateUser(ctx context.Context, name string, email string, password string, userType string, createdBy int) (*model.User, error)
 	LoginUser(ctx context.Context, email string, password string) (*loginResult, error)
-	// UpdateUser(ctx context.Context, name string, phone string, email string, id string) (*models.User, error)
-	// GetUsers(ctx context.Context, skip uint64, take uint64) ([]models.User, error)
-	GetUser(ctx context.Context, id int) (*models.User, error)
+	// UpdateUser(ctx context.Context, name string, phone string, email string, id string) (*model.User, error)
+	GetUsers(ctx context.Context, filter models.FilterQuery, userType string) ([]*model.User, error)
+	GetUser(ctx context.Context, id int) (*model.User, error)
 	// DeleteUser(ctx context.Context, id string) (bool, error)
 }
 
 // loginResult holds the user details and token
 type loginResult struct {
-	User  models.User `json:"user"`
-	Token string      `json:"token"`
+	User  model.User `json:"user"`
+	Token string     `json:"token"`
 }
 
 //userRepository gets repository
@@ -41,7 +42,7 @@ func NewUserService(r repository.Repository) UserService {
 }
 
 //CreateUser saves user details here
-func (s *userRepository) CreateUser(ctx context.Context, name string, email string, password string, userType string, createdBy int) (*models.User, error) {
+func (s *userRepository) CreateUser(ctx context.Context, name string, email string, password string, userType string, createdBy int) (*model.User, error) {
 	hash, hashErr := hashpassword.HashPassword(password)
 	if hashErr != nil {
 		return nil, hashErr
@@ -56,12 +57,12 @@ func (s *userRepository) CreateUser(ctx context.Context, name string, email stri
 		return nil, err
 	}
 
-	var user = &models.User{
+	var user = &model.User{
 		ID:       u.ID,
 		Fullname: u.Fullname,
 		Email:    u.Email,
-		Type:     u.Type,
-		CreatedBy: &models.User{
+		UserType: model.UserTypeEnum(u.Type),
+		CreatedBy: &model.User{
 			ID: createdByRes,
 		},
 		CreatedAt: u.CreatedAt,
@@ -85,8 +86,6 @@ func (s *userRepository) LoginUser(ctx context.Context, email string, password s
 		return nil, err
 	}
 
-	log.Println(createdBy)
-
 	//since email in db, lets validate hash and then send back
 	isSame := validatehash.ValidateCipher(password, u.Password)
 	if isSame == false {
@@ -103,16 +102,16 @@ func (s *userRepository) LoginUser(ctx context.Context, email string, password s
 		return nil, signTokenErrr
 	}
 	loginResultVar := &loginResult{
-		User: models.User{
+		User: model.User{
 			ID:       u.ID,
 			Fullname: u.Fullname,
 			Email:    u.Email,
-			Type:     u.Type,
-			CreatedBy: &models.User{
+			UserType: model.UserTypeEnum(u.Type),
+			CreatedBy: &model.User{
 				ID:        createdBy.ID,
 				Fullname:  createdBy.Fullname,
 				Email:     createdBy.Email,
-				Type:      createdBy.Type,
+				UserType:  model.UserTypeEnum(createdBy.Type),
 				CreatedAt: createdBy.CreatedAt,
 				UpdatedAt: createdBy.UpdatedAt,
 			},
@@ -125,12 +124,12 @@ func (s *userRepository) LoginUser(ctx context.Context, email string, password s
 }
 
 //GetUser retrieves a single user
-func (s *userRepository) GetUser(ctx context.Context, id int) (*models.User, error) {
+func (s *userRepository) GetUser(ctx context.Context, id int) (*model.User, error) {
 	var u models.User
 	var createdBy models.User
 
 	err := s.repository.GetSingle(ctx,
-		"SELECT USER1.id, USER1.fullname, USER1.password, USER1.email, USER1.user_type, USER1.deleted, USER1.created_at, USER1.updated_at, USER2.id, USER2.fullname, USER2.password, USER2.email, USER2.user_type, USER2.deleted, USER2.created_at, USER2.updated_at FROM users AS USER1, users AS USER2 WHERE USER1.created_by=USER2.id OR USER1.id=$1 AND USER1.deleted=FALSE LIMIT 1",
+		"SELECT USER1.id, USER1.fullname, USER1.password, USER1.email, USER1.user_type, USER1.deleted, USER1.created_at, USER1.updated_at, USER2.id, USER2.fullname, USER2.password, USER2.email, USER2.user_type, USER2.deleted, USER2.created_at, USER2.updated_at FROM users AS USER1 LEFT JOIN users AS USER2 ON USER1.created_by=USER2.id WHERE USER1.id=$1 AND USER1.deleted=FALSE",
 		id,
 	).Scan(&u.ID, &u.Fullname, &u.Password, &u.Email, &u.Type, &u.IsDeleted, &u.CreatedAt, &u.UpdatedAt, &createdBy.ID, &createdBy.Fullname, &createdBy.Password, &createdBy.Email, &createdBy.Type, &createdBy.IsDeleted, &createdBy.CreatedAt, &createdBy.UpdatedAt)
 
@@ -138,20 +137,58 @@ func (s *userRepository) GetUser(ctx context.Context, id int) (*models.User, err
 		return nil, err
 	}
 
-	return &models.User{
+	return &model.User{
 		ID:       u.ID,
 		Fullname: u.Fullname,
 		Email:    u.Email,
-		Type:     u.Type,
-		CreatedBy: &models.User{
+		UserType: model.UserTypeEnum(u.Type),
+		CreatedBy: &model.User{
 			ID:        createdBy.ID,
 			Fullname:  createdBy.Fullname,
 			Email:     createdBy.Email,
-			Type:      createdBy.Type,
+			UserType:  model.UserTypeEnum(createdBy.Type),
 			CreatedAt: createdBy.CreatedAt,
 			UpdatedAt: createdBy.UpdatedAt,
 		},
 		CreatedAt: u.CreatedAt,
 		UpdatedAt: u.UpdatedAt,
 	}, nil
+}
+
+// GetUsers retrieves data based on what er have
+func (s *userRepository) GetUsers(ctx context.Context, filter models.FilterQuery, userType string) ([]*model.User, error) {
+	var users []*model.User
+	rows, err := s.repository.GetAll(ctx, fmt.Sprintf("SELECT USER1.id, USER1.fullname, USER1.password, USER1.email, USER1.user_type, USER1.deleted, USER1.created_at, USER1.updated_at, USER2.id, USER2.fullname, USER2.password, USER2.email, USER2.user_type, USER2.deleted, USER2.created_at, USER2.updated_at FROM users AS USER1 LEFT JOIN users AS USER2 ON USER1.created_by=USER2.id WHERE%s%s USER1.deleted=FALSE %s ORDER BY USER1.%s %s %s %s", filter.Search, filter.DateRange, userType, filter.OrderBy, filter.Order, filter.Limit, filter.Skip))
+
+	if err != nil {
+		return nil, err
+	}
+
+	for rows.Next() {
+		var u models.User
+		var createdBy models.User
+		err := rows.Scan(&u.ID, &u.Fullname, &u.Password, &u.Email, &u.Type, &u.IsDeleted, &u.CreatedAt, &u.UpdatedAt, &createdBy.ID, &createdBy.Fullname, &createdBy.Password, &createdBy.Email, &createdBy.Type, &createdBy.IsDeleted, &createdBy.CreatedAt, &createdBy.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+		newUser := &model.User{
+			ID:       u.ID,
+			Fullname: u.Fullname,
+			Email:    u.Email,
+			UserType: model.UserTypeEnum(u.Type),
+			CreatedBy: &model.User{
+				ID:        createdBy.ID,
+				Fullname:  createdBy.Fullname,
+				Email:     createdBy.Email,
+				UserType:  model.UserTypeEnum(createdBy.Type),
+				CreatedAt: createdBy.CreatedAt,
+				UpdatedAt: createdBy.UpdatedAt,
+			},
+			CreatedAt: u.CreatedAt,
+			UpdatedAt: u.UpdatedAt,
+		}
+		//append to our users
+		users = append(users, newUser)
+	}
+	return users, nil
 }
