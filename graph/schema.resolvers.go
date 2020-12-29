@@ -31,18 +31,7 @@ func (r *mutationResolver) CreateUser(ctx context.Context, input model.CreateUse
 	if err != nil {
 		return nil, err
 	}
-	u := &model.User{
-		ID:       res.ID,
-		Fullname: res.Fullname,
-		Email:    res.Email,
-		CreatedBy: &model.User{
-			ID: res.CreatedBy.ID,
-		},
-		UserType:  model.UserTypeEnum(res.Type),
-		CreatedAt: res.CreatedAt,
-		UpdatedAt: res.UpdatedAt,
-	}
-	return u, nil
+	return res, nil
 }
 
 func (r *mutationResolver) Login(ctx context.Context, input model.LoginUserInput) (*model.LoginResult, error) {
@@ -51,28 +40,40 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginUserInput
 		return nil, err
 	}
 	return &model.LoginResult{
-		User: &model.User{
-			ID:       res.User.ID,
-			Fullname: res.User.Fullname,
-			Email:    res.User.Email,
-			CreatedBy: &model.User{
-				ID:        res.User.CreatedBy.ID,
-				Fullname:  res.User.CreatedBy.Fullname,
-				Email:     res.User.CreatedBy.Email,
-				UserType:  model.UserTypeEnum(res.User.CreatedBy.Type),
-				CreatedAt: res.User.CreatedBy.CreatedAt,
-				UpdatedAt: res.User.CreatedBy.UpdatedAt,
-			},
-			UserType:  model.UserTypeEnum(res.User.Type),
-			CreatedAt: res.User.CreatedAt,
-			UpdatedAt: res.User.UpdatedAt,
-		},
+		User:  &res.User,
 		Token: res.Token,
 	}, nil
 }
 
-func (r *queryResolver) Users(ctx context.Context) ([]*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+func (r *queryResolver) Users(ctx context.Context, filter *model.GetUsersInput, pagination *model.Pagination) ([]*model.User, error) {
+	//if there is a validation errorm return the error,else go on with whatever you are doing
+	adminData, validateErr := utils.ValidateUser(ctx, r.userService)
+	if validateErr != nil {
+		return nil, errors.New("AuthorizationFailed")
+	}
+
+	//make sure it is a super admin creating the account
+	if adminData.Type != "ADMIN" {
+		return nil, errors.New("PermissionDenied")
+	}
+
+	//generate sieve
+	generateQuery, err := utils.GenerateQuery(filter, pagination)
+	if err != nil {
+		return nil, err
+	}
+
+	//if user is sieving with
+	userType := ""
+	if filter.UserType != nil {
+		userType = fmt.Sprintf("AND USER1.user_type='%s'", filter.UserType)
+	}
+
+	res, err := r.userService.GetUsers(ctx, *generateQuery, userType)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
@@ -84,7 +85,6 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
-//ToExecutableSchema to start
 // !!! WARNING !!!
 // The code below was going to be deleted when updating resolvers. It has been copied here so you have
 // one last chance to move it out of harms way if you want. There are two reasons this happens:
