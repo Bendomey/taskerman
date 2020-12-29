@@ -58,7 +58,7 @@ func (r *postgresqlRepository) Insert(ctx context.Context, statement string, arg
 	return true, nil
 }
 
-// DeleteSingle is used to delete from db
+// AlterSingleWithoutReturning is used to alter data in db
 func (r *postgresqlRepository) AlterSingleWithoutReturning(ctx context.Context, statement string, args ...interface{}) error {
 	_, err := r.db.Exec(ctx, statement, args...)
 	if err != nil {
