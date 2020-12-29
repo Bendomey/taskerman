@@ -68,6 +68,23 @@ input GetUserInput {
   userId: Int!
 }
 
+input UpdateUserInput {
+  userId: Int!
+  fullname: String
+  email: String
+  user_type: UserTypeEnum
+}
+
+input UpdateUserSelfInput {
+  userId: Int!
+  fullname: String
+  email: String
+}
+
+input DeleteUserInput {
+  userId: Int!
+}
+
 type Query {
   users(filter: GetUsersInput = {}, pagination: Pagination = {}): [User]!
   usersLength(filter: GetUsersInput = {}): Int!
@@ -77,4 +94,7 @@ type Query {
 type Mutation {
   createUser(input: CreateUserInput!): User!
   login(input: LoginUserInput!): LoginResult!
+  updateUser(input: UpdateUserInput!): User!
+  updateUserSelf(input: UpdateUserSelfInput!): User!
+  deleteUser(input: DeleteUserInput!): Boolean!
 }

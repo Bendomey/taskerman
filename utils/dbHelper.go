@@ -52,7 +52,7 @@ func GenerateQuery(filter *model.GetUsersInput, pagination *model.Pagination) (*
 			searchFields += fmt.Sprintf(" USER1.%s LIKE '%%%s%%' %s", filter.SearchFields[i], *filter.Search, getLast(i, len(filter.SearchFields)))
 		}
 
-		filterResult.Search = fmt.Sprintf("%s", searchFields)
+		filterResult.Search = fmt.Sprintf("(%s) AND", searchFields)
 	}
 	return &filterResult, nil
 }
@@ -60,7 +60,7 @@ func GenerateQuery(filter *model.GetUsersInput, pagination *model.Pagination) (*
 func getLast(i int, total int) string {
 
 	if i == total-1 {
-		return "AND"
+		return ""
 	}
 	return "OR"
 

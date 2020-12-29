@@ -21,6 +21,10 @@ type DateRange struct {
 	EndDate   time.Time `json:"endDate"`
 }
 
+type DeleteUserInput struct {
+	UserID int `json:"userId"`
+}
+
 type GetUserInput struct {
 	UserID int `json:"userId"`
 }
@@ -48,6 +52,19 @@ type LoginUserInput struct {
 type Pagination struct {
 	Skip  *int `json:"skip"`
 	Limit *int `json:"limit"`
+}
+
+type UpdateUserInput struct {
+	UserID   int           `json:"userId"`
+	Fullname *string       `json:"fullname"`
+	Email    *string       `json:"email"`
+	UserType *UserTypeEnum `json:"user_type"`
+}
+
+type UpdateUserSelfInput struct {
+	UserID   int     `json:"userId"`
+	Fullname *string `json:"fullname"`
+	Email    *string `json:"email"`
 }
 
 type User struct {

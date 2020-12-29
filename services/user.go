@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/Bendomey/goutilities/pkg/hashpassword"
@@ -24,7 +23,7 @@ type UserService interface {
 	GetUsers(ctx context.Context, filter models.FilterQuery, userType string) ([]*model.User, error)
 	GetUsersLength(ctx context.Context, filter models.FilterQuery, userType string) (*int, error)
 	GetUser(ctx context.Context, id int) (*model.User, error)
-	// DeleteUser(ctx context.Context, id string) (bool, error)
+	DeleteUser(ctx context.Context, id int) error
 }
 
 // loginResult holds the user details and token
@@ -197,7 +196,6 @@ func (s *userRepository) GetUsers(ctx context.Context, filter models.FilterQuery
 
 //GetUsersLength retrieves the length depeneding on a filter
 func (s *userRepository) GetUsersLength(ctx context.Context, filter models.FilterQuery, userType string) (*int, error) {
-	log.Println(fmt.Sprintf("SELECT COUNT(*) FROM users AS USER1 WHERE%s%s USER1.deleted=FALSE %s ORDER BY USER1.%s %s %s %s", filter.Search, filter.DateRange, userType, filter.OrderBy, filter.Order, filter.Limit, filter.Skip))
 	rows, err := s.repository.GetAll(ctx, fmt.Sprintf("SELECT COUNT(*) FROM users AS USER1 WHERE%s%s USER1.deleted=FALSE %s", filter.Search, filter.DateRange, userType))
 	if err != nil {
 		return nil, err
@@ -211,4 +209,13 @@ func (s *userRepository) GetUsersLength(ctx context.Context, filter models.Filte
 	}
 
 	return length, nil
+}
+
+//DeleteUser changes the isDeleted to true given the id
+func (s *userRepository) DeleteUser(ctx context.Context, id int) error {
+	err := s.repository.DeleteSingle(ctx, "UPDATE users SET deleted=TRUE WHERE id=$1", id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

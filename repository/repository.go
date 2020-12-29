@@ -14,6 +14,7 @@ type Repository interface {
 	Insert(ctx context.Context, statement string, args ...interface{}) (bool, error)     /// to insert and return boolean database
 	GetSingle(ctx context.Context, statement string, args ...interface{}) pgx.Row        /// return single row database
 	GetAll(ctx context.Context, statement string, args ...interface{}) (pgx.Rows, error) /// return single row database
+	DeleteSingle(ctx context.Context, statement string, args ...interface{}) error       /// to insert and return boolean database
 
 }
 
@@ -48,13 +49,22 @@ func (r *postgresqlRepository) GetSingle(ctx context.Context, statement string, 
 	return row
 }
 
-// Close is used to insert into the db
+// Insert is used to insert into the db
 func (r *postgresqlRepository) Insert(ctx context.Context, statement string, args ...interface{}) (bool, error) {
 	_, err := r.db.Exec(ctx, statement, args...)
 	if err != nil {
 		return false, err
 	}
 	return true, nil
+}
+
+// DeleteSingle is used to delete from db
+func (r *postgresqlRepository) DeleteSingle(ctx context.Context, statement string, args ...interface{}) error {
+	_, err := r.db.Exec(ctx, statement, args...)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (r *postgresqlRepository) GetAll(ctx context.Context, statement string, args ...interface{}) (pgx.Rows, error) {

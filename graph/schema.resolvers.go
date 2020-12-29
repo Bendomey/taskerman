@@ -45,6 +45,28 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginUserInput
 	}, nil
 }
 
+func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUserInput) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) UpdateUserSelf(ctx context.Context, input model.UpdateUserSelfInput) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *mutationResolver) DeleteUser(ctx context.Context, input model.DeleteUserInput) (bool, error) {
+	//if there is a validation error return the error,else go on with whatever you are doing
+	_, validateErr := utils.ValidateUser(ctx, r.userService)
+	if validateErr != nil {
+		return false, errors.New("AuthorizationFailed")
+	}
+
+	err := r.userService.DeleteUser(ctx, input.UserID)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
 func (r *queryResolver) Users(ctx context.Context, filter *model.GetUsersInput, pagination *model.Pagination) ([]*model.User, error) {
 	//if there is a validation errorm return the error,else go on with whatever you are doing
 	adminData, validateErr := utils.ValidateUser(ctx, r.userService)
@@ -105,7 +127,6 @@ func (r *queryResolver) UsersLength(ctx context.Context, filter *model.GetUsersI
 		return 0, err
 	}
 	return *res, nil
-
 }
 
 func (r *queryResolver) User(ctx context.Context, filter model.GetUserInput) (*model.User, error) {
@@ -136,6 +157,7 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
+//ToExecutableSchema .
 // !!! WARNING !!!
 // The code below was going to be deleted when updating resolvers. It has been copied here so you have
 // one last chance to move it out of harms way if you want. There are two reasons this happens:
