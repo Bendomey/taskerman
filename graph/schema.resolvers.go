@@ -85,7 +85,6 @@ func (r *mutationResolver) UpdateUserSelf(ctx context.Context, input model.Updat
 	if validateErr != nil {
 		return nil, errors.New("AuthorizationFailed")
 	}
-
 	changes := ""
 	if input.Fullname != nil && strings.TrimSpace(*input.Fullname) != "" {
 		changes += fmt.Sprintf(", fullname='%s'", *input.Fullname)
@@ -111,6 +110,20 @@ func (r *mutationResolver) DeleteUser(ctx context.Context, input model.DeleteUse
 	}
 
 	err := r.userService.DeleteUser(ctx, input.UserID)
+	if err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (r *mutationResolver) ChangePassword(ctx context.Context, input model.ChangeUserPasswordInput) (bool, error) {
+	//if there is a validation errorm return the error,else go on with whatever you are doing
+	userData, validateErr := utils.ValidateUser(ctx, r.userService)
+	if validateErr != nil {
+		return false, errors.New("AuthorizationFailed")
+	}
+
+	err := r.userService.ChangeUserPassword(ctx, userData.ID, input.OldPassword, input.NewPassword)
 	if err != nil {
 		return false, err
 	}

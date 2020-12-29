@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	"github.com/Bendomey/goutilities/pkg/hashpassword"
@@ -25,6 +24,7 @@ type UserService interface {
 	GetUsersLength(ctx context.Context, filter models.FilterQuery, userType string) (*int, error)
 	GetUser(ctx context.Context, id int) (*model.User, error)
 	DeleteUser(ctx context.Context, id int) error
+	ChangeUserPassword(ctx context.Context, id int, oldPassword string, newPassword string) error
 }
 
 // loginResult holds the user details and token
@@ -214,18 +214,17 @@ func (s *userRepository) GetUsersLength(ctx context.Context, filter models.Filte
 
 //DeleteUser changes the isDeleted to true given the id
 func (s *userRepository) DeleteUser(ctx context.Context, id int) error {
-	err := s.repository.DeleteSingle(ctx, "UPDATE users SET deleted=TRUE WHERE id=$1", id)
+	err := s.repository.AlterSingleWithoutReturning(ctx, "UPDATE users SET deleted=TRUE WHERE id=$1", id)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-//CreateUser saves user details here
+//UpdateUser updates user details
 func (s *userRepository) UpdateUser(ctx context.Context, id int, changes string) (*model.User, error) {
 	var u models.User
 	var createdByRes int
-	log.Println(fmt.Sprintf("UPDATE users SET updated_at=now()%s WHERE id=$1 returning id,fullname,email,user_type,created_by,created_at,updated_at;", changes))
 	err := s.repository.GetSingle(ctx, fmt.Sprintf("UPDATE users SET updated_at=now()%s WHERE id=$1 returning id,fullname,email,user_type,created_by,created_at,updated_at;", changes), id).Scan(
 		&u.ID, &u.Fullname, &u.Email, &u.Type, &createdByRes, &u.CreatedAt, &u.UpdatedAt,
 	)
@@ -246,4 +245,34 @@ func (s *userRepository) UpdateUser(ctx context.Context, id int, changes string)
 		UpdatedAt: u.UpdatedAt,
 	}
 	return user, nil
+}
+
+//ChangeUserPassword updates user password
+func (s *userRepository) ChangeUserPassword(ctx context.Context, id int, oldPassword string, newPassword string) error {
+	var passwordResult string
+
+	//fetch user first
+	geterr := s.repository.GetSingle(ctx, "SELECT password from users WHERE id=$1", id).Scan(&passwordResult)
+	if geterr != nil {
+		return geterr
+	}
+
+	//mnake sure hash is equal old password
+	isSame := validatehash.ValidateCipher(oldPassword, passwordResult)
+	if isSame == false {
+		return errors.New("Old Password is incorrect")
+	}
+
+	//hash new password and save
+	hash, hashErr := hashpassword.HashPassword(newPassword)
+	if hashErr != nil {
+		return hashErr
+	}
+
+	//update here
+	err := s.repository.AlterSingleWithoutReturning(ctx, "UPDATE users SET updated_at=now(), password=$1 WHERE id=$2", hash, id)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -10,11 +10,11 @@ import (
 
 //Repository services to export from repository module
 type Repository interface {
-	Close()                                                                              /// to close database
-	Insert(ctx context.Context, statement string, args ...interface{}) (bool, error)     /// to insert and return boolean database
-	GetSingle(ctx context.Context, statement string, args ...interface{}) pgx.Row        /// return single row database
-	GetAll(ctx context.Context, statement string, args ...interface{}) (pgx.Rows, error) /// return single row database
-	DeleteSingle(ctx context.Context, statement string, args ...interface{}) error       /// to insert and return boolean database
+	Close()                                                                                       /// to close database
+	Insert(ctx context.Context, statement string, args ...interface{}) (bool, error)              /// to insert and return boolean database
+	GetSingle(ctx context.Context, statement string, args ...interface{}) pgx.Row                 /// return single row database
+	GetAll(ctx context.Context, statement string, args ...interface{}) (pgx.Rows, error)          /// return single row database
+	AlterSingleWithoutReturning(ctx context.Context, statement string, args ...interface{}) error /// to insert and return boolean database
 
 }
 
@@ -59,7 +59,7 @@ func (r *postgresqlRepository) Insert(ctx context.Context, statement string, arg
 }
 
 // DeleteSingle is used to delete from db
-func (r *postgresqlRepository) DeleteSingle(ctx context.Context, statement string, args ...interface{}) error {
+func (r *postgresqlRepository) AlterSingleWithoutReturning(ctx context.Context, statement string, args ...interface{}) error {
 	_, err := r.db.Exec(ctx, statement, args...)
 	if err != nil {
 		return err

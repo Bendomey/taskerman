@@ -9,6 +9,11 @@ import (
 	"time"
 )
 
+type ChangeUserPasswordInput struct {
+	OldPassword string `json:"oldPassword"`
+	NewPassword string `json:"newPassword"`
+}
+
 type CreateUserInput struct {
 	Name     string       `json:"name"`
 	Email    string       `json:"email"`
