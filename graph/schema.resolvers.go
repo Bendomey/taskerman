@@ -109,7 +109,22 @@ func (r *queryResolver) UsersLength(ctx context.Context, filter *model.GetUsersI
 }
 
 func (r *queryResolver) User(ctx context.Context, filter model.GetUserInput) (*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	//if there is a validation errorm return the error,else go on with whatever you are doing
+	adminData, validateErr := utils.ValidateUser(ctx, r.userService)
+	if validateErr != nil {
+		return nil, errors.New("AuthorizationFailed")
+	}
+
+	//make sure it is a super admin creating the account
+	if adminData.Type != "ADMIN" {
+		return nil, errors.New("PermissionDenied")
+	}
+
+	res, err := r.userService.GetUser(ctx, filter.UserID)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 // Mutation returns generated.MutationResolver implementation.
