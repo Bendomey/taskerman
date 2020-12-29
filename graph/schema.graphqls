@@ -39,8 +39,33 @@ input LoginUserInput {
   password: String!
 }
 
+input Pagination {
+  skip: Int
+  limit: Int
+}
+
+input GetUsersInput {
+  user_type: UserTypeEnum
+  order: OrderType
+  orderBy: String
+  dateField: String
+  dateRange: DateRange
+  search: String
+  searchFields: [String!]
+}
+
+enum OrderType {
+  ASC
+  DESC
+}
+
+input DateRange {
+  startDate: Time!
+  endDate: Time!
+}
+
 type Query {
-  users: [User]!
+  users(filter: GetUsersInput = {}, pagination: Pagination = {}): [User]!
 }
 
 type Mutation {
