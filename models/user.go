@@ -16,3 +16,13 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 }
+
+//FilterQuery type to help generate filter for queries
+type FilterQuery struct {
+	Limit     string `json:"limit"`
+	Skip      string `json:"skip"`
+	Order     string `json:"order"`
+	OrderBy   string `json:"orderBy"`
+	Search    string `json:"search"`
+	DateRange string `json:"dateRange"`
+}

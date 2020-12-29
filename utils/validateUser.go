@@ -3,7 +3,6 @@ package utils
 import (
 	"context"
 	"errors"
-	"log"
 	"os"
 	"strings"
 
@@ -67,7 +66,6 @@ func ValidateUser(ctx context.Context, userService services.UserService) (*UserF
 	//check if its exists in db
 	_, err := userService.GetUser(ctx, userFromTokenImplementation.ID)
 	if err != nil {
-		log.Print("from here")
 		return nil, err
 	}
 

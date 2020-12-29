@@ -39,11 +39,67 @@ input LoginUserInput {
   password: String!
 }
 
+input Pagination {
+  skip: Int
+  limit: Int
+}
+
+input GetUsersInput {
+  user_type: UserTypeEnum
+  order: OrderType
+  orderBy: String
+  dateField: String
+  dateRange: DateRange
+  search: String
+  searchFields: [String!]
+}
+
+enum OrderType {
+  ASC
+  DESC
+}
+
+input DateRange {
+  startDate: Time!
+  endDate: Time!
+}
+
+input GetUserInput {
+  userId: Int!
+}
+
+input UpdateUserInput {
+  userId: Int!
+  fullname: String
+  email: String
+  user_type: UserTypeEnum
+}
+
+input UpdateUserSelfInput {
+  fullname: String
+  email: String
+}
+
+input DeleteUserInput {
+  userId: Int!
+}
+
+input ChangeUserPasswordInput {
+  oldPassword: String!
+  newPassword: String!
+}
+
 type Query {
-  users: [User]!
+  users(filter: GetUsersInput = {}, pagination: Pagination = {}): [User]!
+  usersLength(filter: GetUsersInput = {}): Int!
+  user(filter: GetUserInput!): User!
 }
 
 type Mutation {
   createUser(input: CreateUserInput!): User!
   login(input: LoginUserInput!): LoginResult!
+  updateUser(input: UpdateUserInput!): User!
+  updateUserSelf(input: UpdateUserSelfInput!): User!
+  deleteUser(input: DeleteUserInput!): Boolean!
+  changePassword(input: ChangeUserPasswordInput!): Boolean!
 }
