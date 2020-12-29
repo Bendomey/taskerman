@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/Bendomey/goutilities/pkg/hashpassword"
@@ -21,6 +22,7 @@ type UserService interface {
 	LoginUser(ctx context.Context, email string, password string) (*loginResult, error)
 	// UpdateUser(ctx context.Context, name string, phone string, email string, id string) (*model.User, error)
 	GetUsers(ctx context.Context, filter models.FilterQuery, userType string) ([]*model.User, error)
+	GetUsersLength(ctx context.Context, filter models.FilterQuery, userType string) (*int, error)
 	GetUser(ctx context.Context, id int) (*model.User, error)
 	// DeleteUser(ctx context.Context, id string) (bool, error)
 }
@@ -191,4 +193,22 @@ func (s *userRepository) GetUsers(ctx context.Context, filter models.FilterQuery
 		users = append(users, newUser)
 	}
 	return users, nil
+}
+
+//GetUsersLength retrieves the length depeneding on a filter
+func (s *userRepository) GetUsersLength(ctx context.Context, filter models.FilterQuery, userType string) (*int, error) {
+	log.Println(fmt.Sprintf("SELECT COUNT(*) FROM users AS USER1 WHERE%s%s USER1.deleted=FALSE %s ORDER BY USER1.%s %s %s %s", filter.Search, filter.DateRange, userType, filter.OrderBy, filter.Order, filter.Limit, filter.Skip))
+	rows, err := s.repository.GetAll(ctx, fmt.Sprintf("SELECT COUNT(*) FROM users AS USER1 WHERE%s%s USER1.deleted=FALSE %s", filter.Search, filter.DateRange, userType))
+	if err != nil {
+		return nil, err
+	}
+	var length *int
+	for rows.Next() {
+		err := rows.Scan(&length)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	return length, nil
 }

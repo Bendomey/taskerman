@@ -64,8 +64,14 @@ input DateRange {
   endDate: Time!
 }
 
+input GetUserInput {
+  userId: Int!
+}
+
 type Query {
   users(filter: GetUsersInput = {}, pagination: Pagination = {}): [User]!
+  usersLength(filter: GetUsersInput = {}): Int!
+  user(filter: GetUserInput!): User!
 }
 
 type Mutation {

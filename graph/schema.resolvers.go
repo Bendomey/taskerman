@@ -76,6 +76,42 @@ func (r *queryResolver) Users(ctx context.Context, filter *model.GetUsersInput, 
 	return res, nil
 }
 
+func (r *queryResolver) UsersLength(ctx context.Context, filter *model.GetUsersInput) (int, error) {
+	//if there is a validation errorm return the error,else go on with whatever you are doing
+	adminData, validateErr := utils.ValidateUser(ctx, r.userService)
+	if validateErr != nil {
+		return 0, errors.New("AuthorizationFailed")
+	}
+
+	//make sure it is a super admin creating the account
+	if adminData.Type != "ADMIN" {
+		return 0, errors.New("PermissionDenied")
+	}
+
+	//generate sieve
+	generateQuery, err := utils.GenerateQuery(filter, &model.Pagination{})
+	if err != nil {
+		return 0, err
+	}
+
+	//if user is sieving with
+	userType := ""
+	if filter.UserType != nil {
+		userType = fmt.Sprintf("AND USER1.user_type='%s'", filter.UserType)
+	}
+
+	res, err := r.userService.GetUsersLength(ctx, *generateQuery, userType)
+	if err != nil {
+		return 0, err
+	}
+	return *res, nil
+
+}
+
+func (r *queryResolver) User(ctx context.Context, filter model.GetUserInput) (*model.User, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
 // Mutation returns generated.MutationResolver implementation.
 func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
@@ -85,7 +121,6 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
-//ToExecutableSchema .
 // !!! WARNING !!!
 // The code below was going to be deleted when updating resolvers. It has been copied here so you have
 // one last chance to move it out of harms way if you want. There are two reasons this happens:

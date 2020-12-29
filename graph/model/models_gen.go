@@ -21,6 +21,10 @@ type DateRange struct {
 	EndDate   time.Time `json:"endDate"`
 }
 
+type GetUserInput struct {
+	UserID int `json:"userId"`
+}
+
 type GetUsersInput struct {
 	UserType     *UserTypeEnum `json:"user_type"`
 	Order        *OrderType    `json:"order"`
