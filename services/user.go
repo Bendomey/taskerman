@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
 	"github.com/Bendomey/goutilities/pkg/hashpassword"
@@ -19,7 +20,7 @@ import (
 type UserService interface {
 	CreateUser(ctx context.Context, name string, email string, password string, userType string, createdBy int) (*model.User, error)
 	LoginUser(ctx context.Context, email string, password string) (*loginResult, error)
-	// UpdateUser(ctx context.Context, name string, phone string, email string, id string) (*model.User, error)
+	UpdateUser(ctx context.Context, id int, changes string) (*model.User, error)
 	GetUsers(ctx context.Context, filter models.FilterQuery, userType string) ([]*model.User, error)
 	GetUsersLength(ctx context.Context, filter models.FilterQuery, userType string) (*int, error)
 	GetUser(ctx context.Context, id int) (*model.User, error)
@@ -218,4 +219,31 @@ func (s *userRepository) DeleteUser(ctx context.Context, id int) error {
 		return err
 	}
 	return nil
+}
+
+//CreateUser saves user details here
+func (s *userRepository) UpdateUser(ctx context.Context, id int, changes string) (*model.User, error) {
+	var u models.User
+	var createdByRes int
+	log.Println(fmt.Sprintf("UPDATE users SET updated_at=now()%s WHERE id=$1 returning id,fullname,email,user_type,created_by,created_at,updated_at;", changes))
+	err := s.repository.GetSingle(ctx, fmt.Sprintf("UPDATE users SET updated_at=now()%s WHERE id=$1 returning id,fullname,email,user_type,created_by,created_at,updated_at;", changes), id).Scan(
+		&u.ID, &u.Fullname, &u.Email, &u.Type, &createdByRes, &u.CreatedAt, &u.UpdatedAt,
+	)
+
+	if err != nil {
+		return nil, err
+	}
+
+	var user = &model.User{
+		ID:       u.ID,
+		Fullname: u.Fullname,
+		Email:    u.Email,
+		UserType: model.UserTypeEnum(u.Type),
+		CreatedBy: &model.User{
+			ID: createdByRes,
+		},
+		CreatedAt: u.CreatedAt,
+		UpdatedAt: u.UpdatedAt,
+	}
+	return user, nil
 }

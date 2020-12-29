@@ -7,6 +7,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"strings"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/Bendomey/task-assignment/graph/generated"
@@ -46,11 +47,60 @@ func (r *mutationResolver) Login(ctx context.Context, input model.LoginUserInput
 }
 
 func (r *mutationResolver) UpdateUser(ctx context.Context, input model.UpdateUserInput) (*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	//if there is a validation errorm return the error,else go on with whatever you are doing
+	adminData, validateErr := utils.ValidateUser(ctx, r.userService)
+	if validateErr != nil {
+		return nil, errors.New("AuthorizationFailed")
+	}
+
+	//make sure it is a super admin creating the account
+	if adminData.Type != "ADMIN" {
+		return nil, errors.New("PermissionDenied")
+	}
+
+	changes := ""
+	if input.Fullname != nil && strings.TrimSpace(*input.Fullname) != "" {
+		changes += fmt.Sprintf(", fullname='%s'", *input.Fullname)
+	}
+
+	if input.Email != nil && strings.TrimSpace(*input.Email) != "" {
+		changes += fmt.Sprintf(", email='%s'", *input.Email)
+	}
+
+	if input.UserType != nil {
+		changes += fmt.Sprintf(", user_type='%s'", *input.UserType)
+	}
+
+	// var user model.User
+	res, err := r.userService.UpdateUser(ctx, input.UserID, changes)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func (r *mutationResolver) UpdateUserSelf(ctx context.Context, input model.UpdateUserSelfInput) (*model.User, error) {
-	panic(fmt.Errorf("not implemented"))
+	//if there is a validation errorm return the error,else go on with whatever you are doing
+	adminData, validateErr := utils.ValidateUser(ctx, r.userService)
+	if validateErr != nil {
+		return nil, errors.New("AuthorizationFailed")
+	}
+
+	changes := ""
+	if input.Fullname != nil && strings.TrimSpace(*input.Fullname) != "" {
+		changes += fmt.Sprintf(", fullname='%s'", *input.Fullname)
+	}
+
+	if input.Email != nil && strings.TrimSpace(*input.Email) != "" {
+		changes += fmt.Sprintf(", email='%s'", *input.Email)
+	}
+
+	// var user model.User
+	res, err := r.userService.UpdateUser(ctx, adminData.ID, changes)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
 }
 
 func (r *mutationResolver) DeleteUser(ctx context.Context, input model.DeleteUserInput) (bool, error) {
@@ -157,7 +207,6 @@ func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
 
-//ToExecutableSchema .
 // !!! WARNING !!!
 // The code below was going to be deleted when updating resolvers. It has been copied here so you have
 // one last chance to move it out of harms way if you want. There are two reasons this happens:

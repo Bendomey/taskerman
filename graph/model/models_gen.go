@@ -62,7 +62,6 @@ type UpdateUserInput struct {
 }
 
 type UpdateUserSelfInput struct {
-	UserID   int     `json:"userId"`
 	Fullname *string `json:"fullname"`
 	Email    *string `json:"email"`
 }

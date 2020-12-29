@@ -76,7 +76,6 @@ input UpdateUserInput {
 }
 
 input UpdateUserSelfInput {
-  userId: Int!
   fullname: String
   email: String
 }

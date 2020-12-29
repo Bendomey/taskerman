@@ -403,7 +403,6 @@ input UpdateUserInput {
 }
 
 input UpdateUserSelfInput {
-  userId: Int!
   fullname: String
   email: String
 }
@@ -2710,14 +2709,6 @@ func (ec *executionContext) unmarshalInputUpdateUserSelfInput(ctx context.Contex
 
 	for k, v := range asMap {
 		switch k {
-		case "userId":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("userId"))
-			it.UserID, err = ec.unmarshalNInt2int(ctx, v)
-			if err != nil {
-				return it, err
-			}
 		case "fullname":
 			var err error
 
