@@ -14,7 +14,7 @@ type Repository interface {
 	Insert(ctx context.Context, statement string, args ...interface{}) (bool, error)              /// to insert and return boolean database
 	GetSingle(ctx context.Context, statement string, args ...interface{}) pgx.Row                 /// return single row database
 	GetAll(ctx context.Context, statement string, args ...interface{}) (pgx.Rows, error)          /// return single row database
-	AlterSingleWithoutReturning(ctx context.Context, statement string, args ...interface{}) error /// to insert and return boolean database
+	AlterSingleWithoutReturning(ctx context.Context, statement string, args ...interface{}) error /// to alter db and return boolean
 
 }
 
